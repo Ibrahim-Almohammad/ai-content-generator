@@ -41,12 +41,13 @@ function CreateNewContent(props: PROPS) {
   };
   const saveInDb = async (formData: any, slug: any, aiResp: string) => {
     const result = await db.insert(AIOutput).values({
-      FormData: formData, 
+      formData: formData,
       templateSlug: slug,
       aiResponse: aiResp,
       createdBy: user?.primaryEmailAddress?.emailAddress,
       createdAt: moment().format("DD/MM/yyyy"),
     });
+    console.log(result);
   };
   return (
     <div className="p-10">
