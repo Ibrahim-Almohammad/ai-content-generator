@@ -1,7 +1,7 @@
 "use client"
 import { FileClock, Home, Settings, WalletCards } from 'lucide-react'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname,useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
 
 function SideNav() {
@@ -29,6 +29,7 @@ function SideNav() {
         
     ]
     const path=usePathname();
+    const router = useRouter();
     useEffect(()=>{
         console.log(path);
     },[])
@@ -44,7 +45,9 @@ function SideNav() {
                 <div className={`flex  gap-2 mb-2 p-3 hover:bg-primary
                  hover:text-white rounded-lg cursor-pointer items-center
                  ${path==menu.path&& 'bg-primary text-white'}
-                 `}>
+                 `}
+                 onClick={()=> router.push(menu.path)}
+                 >
                     <menu.icon className='h-6 w-6'/>
                 <h2 className='text-lg'>{menu.name}</h2>
                 </div>
