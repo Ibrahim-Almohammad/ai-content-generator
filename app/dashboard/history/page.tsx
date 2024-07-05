@@ -1,29 +1,37 @@
-"use client"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import React, { useEffect, useState } from 'react';
-
-interface HistoryRecord {
-  id: number;
-  templateSlug: string;
-  aiResponse: string;
-  createdAt: string;
-  createdBy: string;
+'use client'
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import React, { useEffect, useState } from 'react'
+import Templates from '@/app/(data)/Templates'
+import {Button} from '@/components/ui/button'
+import { db } from '@/utils/db'
+import { AIOutput } from '@/utils/schema'
+import { currentUser } from '@clerk/nextjs/server'
+import {desc,eq} from 'drizzle-orm'
+import Image from 'next/image'
+import {TEMPLATE} from '../_components/TemplateListSection'
+export interface HISTORY{
+  id:number,
+  formData:string,
+  aiResponse:string | null;
+  templateSlug:string,
+  createdBy:string,
+  createdAt:string|null;
 }
 
-const HistoryTable: React.FC = () => {
-  const [historyData, setHistoryData] = useState<HistoryRecord[]>([]);
+const wordCount = (text: string | null): number => {
+  return text ? text.trim().split(/\s+/).length : 0;
+};
+
+const History: React.FC = () => {
+  const [historyData, setHistoryData] = useState<HISTORY[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/history');
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json() as HistoryRecord[];
-        setHistoryData(data);
+        const results: HISTORY[] = await db.select().from(AIOutput);
+        setHistoryData(results);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -44,31 +52,37 @@ const HistoryTable: React.FC = () => {
   }
 
   return (
-    <div className="bg-white p-5 m-4 border rounded-md">
-      <h1 className="text-2xl font-bold text-black">History</h1>
-      <p className="mb-3">Search your previously generated AI content</p>
-      <table className="w-full border-collapse border border-gray-200">
-        <thead className="bg-gray-200">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Template</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">AI Response</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Date</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Created By</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200">
+    <div className='bg-white border rounded-md m-4'>
+      <h1 className='mt-3 text-2xl pl-2 font-bold'>History</h1>
+      <p className='pl-2'>Search your previously generated AI content</p>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-black">TEMPLATE</TableHead>
+            <TableHead className="text-black">AI RESP</TableHead>
+            <TableHead className="text-black">DATE</TableHead>
+            <TableHead className="text-black">WORDS</TableHead>
+            <TableHead className="text-black">COPY</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {historyData.map((record) => (
-            <tr key={record.id}>
-              <td className="px-6 py-4 whitespace-nowrap">{record.templateSlug}</td>
-              <td className="px-6 py-4 whitespace-pre-wrap">{record.aiResponse}</td>
-              <td className="px-6 py-4 whitespace-nowrap">{record.createdAt}</td>
-              <td className="px-6 py-4 whitespace-nowrap">{record.createdBy}</td>
-            </tr>
+            <TableRow key={record.id}>
+              <TableCell className="font-medium">{record.templateSlug}</TableCell>
+              <TableCell className='text-sm w-1/4  overflow-hidden '>{record.aiResponse ?? 'No Response'}</TableCell>
+              <TableCell>{record.createdAt ? new Date(record.createdAt).toLocaleDateString() : 'No Date'}</TableCell>
+              <TableCell>{wordCount(record.aiResponse)} </TableCell>
+              <TableCell>
+                <button onClick={() => navigator.clipboard.writeText(record.aiResponse ?? '')}>
+                  Copy
+                </button>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 };
 
-export default HistoryTable;
+export default History;
