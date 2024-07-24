@@ -52,7 +52,7 @@ const History: React.FC = () => {
   if (error) {
     return <p>{error}</p>;
   }
-//todo fromating date
+//todo formating date
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'No Date';
   

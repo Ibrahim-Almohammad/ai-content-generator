@@ -41,11 +41,12 @@ const UsageTrack = () => {
   const GetTotalUsage = (result: HISTORY[]) => {
     let total: number = 0;
     result.forEach((element) => {
-      if (element) {
+      if (element && element.aiResponse) {
+        const count = wordCount(element.aiResponse);
         console.log(
-          `Element ID: ${element.id}, AI Response Length: ${element.aiResponse?.length}`
-        ); // Log each AI response length
-        total += Number(element.aiResponse?.length);
+          `Element ID: ${element.id}, AI Response Word Count: ${count}`
+        ); // Log each AI response word count
+        total += count;
       }
     });
     setTotalUsage(total);
