@@ -9,6 +9,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import {desc,eq} from 'drizzle-orm'
 import Image from 'next/image'
 import {TEMPLATE} from '../_components/TemplateListSection'
+import moment from 'moment';
 
 export interface HISTORY{
   id:number,
@@ -55,17 +56,54 @@ const History: React.FC = () => {
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'No Date';
     
-    const date = new Date(dateString);
+    // Split the date string by possible delimiters
+    const parts = dateString.split(/[\/\-\.]/);
+    if (parts.length !== 3) return 'Invalid Date';
+    
+    let day: string, month: string, year: string;
+    
+    // Handle DD/MM/YYYY format
+    if (parseInt(parts[0]) > 12) {
+      day = parts[0];
+      month = parts[1];
+      year = parts[2];
+    } else if (parseInt(parts[1]) > 12) {
+      // Handle MM/DD/YYYY format
+      month = parts[0];
+      day = parts[1];
+      year = parts[2];
+    } else {
+      // Handle ambiguous cases assuming DD/MM/YYYY format
+      // because the majority of the world uses DD/MM/YYYY
+      day = parts[0];
+      month = parts[1];
+      year = parts[2];
+    }
+    
+    // Validate if the parts are valid numbers
+    if (isNaN(parseInt(day)) || isNaN(parseInt(month)) || isNaN(parseInt(year))) {
+      return 'Invalid Date';
+    }
+    
+    // Normalize day and month to ensure two digits
+    const formattedDay = day.padStart(2, '0');
+    const formattedMonth = month.padStart(2, '0');
+    
+    // Create a new date string in MM/DD/YYYY format
+    const normalizedDateString = `${formattedMonth}/${formattedDay}/${year}`;
+    const date = new Date(normalizedDateString);
+    
     if (isNaN(date.getTime())) {
       return 'Invalid Date';
     }
     
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
+    const formattedYear = date.getFullYear();
     
-    return `${month}/${day}/${year}`;
+    return `${formattedDay}/${formattedMonth}/${formattedYear}`;
   };
+  
+  
+  
 
   return (
     <div className='bg-white border rounded-md m-4'>
