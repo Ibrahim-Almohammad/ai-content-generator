@@ -52,56 +52,22 @@ const History: React.FC = () => {
   if (error) {
     return <p>{error}</p>;
   }
-
+//todo fromating date
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'No Date';
-    
-    // Split the date string by possible delimiters
-    const parts = dateString.split(/[\/\-\.]/);
-    if (parts.length !== 3) return 'Invalid Date';
-    
-    let day: string, month: string, year: string;
-    
-    // Handle DD/MM/YYYY format
-    if (parseInt(parts[0]) > 12) {
-      day = parts[0];
-      month = parts[1];
-      year = parts[2];
-    } else if (parseInt(parts[1]) > 12) {
-      // Handle MM/DD/YYYY format
-      month = parts[0];
-      day = parts[1];
-      year = parts[2];
-    } else {
-      // Handle ambiguous cases assuming DD/MM/YYYY format
-      // because the majority of the world uses DD/MM/YYYY
-      day = parts[0];
-      month = parts[1];
-      year = parts[2];
-    }
-    
-    // Validate if the parts are valid numbers
-    if (isNaN(parseInt(day)) || isNaN(parseInt(month)) || isNaN(parseInt(year))) {
-      return 'Invalid Date';
-    }
-    
-    // Normalize day and month to ensure two digits
-    const formattedDay = day.padStart(2, '0');
-    const formattedMonth = month.padStart(2, '0');
-    
-    // Create a new date string in MM/DD/YYYY format
-    const normalizedDateString = `${formattedMonth}/${formattedDay}/${year}`;
-    const date = new Date(normalizedDateString);
-    
-    if (isNaN(date.getTime())) {
-      return 'Invalid Date';
-    }
-    
-    const formattedYear = date.getFullYear();
-    
-    return `${formattedDay}/${formattedMonth}/${formattedYear}`;
-  };
   
+    // Try to parse the date in DD/MM/YYYY and MM/DD/YYYY formats
+    const dateFormats = ['DD/MM/YYYY', 'MM/DD/YYYY'];
+    const date = moment(dateString, dateFormats, true);
+  
+    if (!date.isValid()) {
+      return 'Invalid Date';
+    }
+  
+    // Format the date as MM/DD/YYYY
+    return date.format('DD/MM/YYYY');
+  };
+  //todo formating
   
   
 
