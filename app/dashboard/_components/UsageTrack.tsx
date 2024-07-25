@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/utils/db";
 import { AIOutput } from "@/utils/schema";
 import { useUser } from "@clerk/nextjs";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { eq } from "drizzle-orm";
 import { HISTORY } from "../history/page";
+import { TotalUsageContext } from "@/app/(context)/TotalUsageContext";
 
 export const wordCount = (text: string | null): number => {
   return text ? text.trim().split(/\s+/).length : 0;
@@ -13,10 +14,13 @@ export const wordCount = (text: string | null): number => {
 
 const UsageTrack = () => {
   const { user } = useUser();
-  const [totalUsage, setTotalUsage] = useState<number>(0);
+  const {totalUsage, setTotalUsage} =useContext(TotalUsageContext);
 
   useEffect(() => {
-    user && GetData();
+    if (user) {
+      console.log("User updated:", user);
+      GetData();
+    }
   }, [user]);
 
   const GetData = async () => {
@@ -50,12 +54,12 @@ const UsageTrack = () => {
       }
     });
     setTotalUsage(total);
-    console.log("Total usage:", total); // Log the total usage for debugging
+    console.log("Total usage updated:", total); // Log the total usage for debugging
   };
 
   return (
     <div className="m-5">
-      <div className="bg-primary p-3 text-white rounded-lg ">
+      <div className="bg-primary p-3 text-white rounded-lg">
         <h2 className="font-medium">Credits</h2>
         <div className="h-2 bg-[#9981f9] w-full rounded-full mt-3">
           <div

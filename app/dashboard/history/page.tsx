@@ -2,22 +2,24 @@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import React, { useEffect, useState } from 'react'
 import Templates from '@/app/(data)/Templates'
-import {Button} from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { db } from '@/utils/db'
 import { AIOutput } from '@/utils/schema'
 import { currentUser } from '@clerk/nextjs/server'
-import {desc,eq} from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import Image from 'next/image'
-import {TEMPLATE} from '../_components/TemplateListSection'
-import moment from 'moment';
+import { TEMPLATE } from '../_components/TemplateListSection'
+import moment from 'moment'
+import { Copy } from 'lucide-react'
+import Link from 'next/link'
 
-export interface HISTORY{
-  id:number,
-  formData:string,
-  aiResponse:string | null;
-  templateSlug:string,
-  createdBy:string,
-  createdAt:string | null;
+export interface HISTORY {
+  id: number,
+  formData: string,
+  aiResponse: string | null;
+  templateSlug: string,
+  createdBy: string,
+  createdAt: string | null;
 }
 
 export const wordCount = (text: string | null): number => {
@@ -52,56 +54,71 @@ const History: React.FC = () => {
   if (error) {
     return <p>{error}</p>;
   }
-//todo formating date
+
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'No Date';
-  
-    // Try to parse the date in DD/MM/YYYY and MM/DD/YYYY formats
+
     const dateFormats = ['DD/MM/YYYY', 'MM/DD/YYYY'];
     const date = moment(dateString, dateFormats, true);
-  
+
     if (!date.isValid()) {
       return 'Invalid Date';
     }
-  
-    // Format the date as MM/DD/YYYY
+
     return date.format('DD/MM/YYYY');
   };
-  //todo formating
-  
-  
+
+  const getTemplateDetails = (templateSlug: string) => {
+    const template = Templates.find((template: TEMPLATE) => template.slug === templateSlug);
+    if (!template) return { icon: '', name: 'Unknown Template' };
+
+    return { icon: template.icon, name: template.name };
+  };
 
   return (
     <div className='bg-white border rounded-md m-4'>
-      <h1 className='mt-3 text-2xl pl-2 font-bold'>History</h1>
-      <p className='pl-2'>Search your previously generated AI content</p>
-      <Table>
+      <h1 className='mt-3 text-3xl pl-2 font-bold'>History</h1>
+      <p className='pl-2 pb-3'>Search your previously generated AI content</p>
+      <Table >
         <TableHeader>
-          <TableRow >
-            <TableHead className="text-black">TEMPLATE</TableHead>
-            <TableHead className="text-black">AI RESP</TableHead>
-            <TableHead className="text-black">DATE</TableHead>
-            <TableHead className="text-black">WORDS</TableHead>
-            <TableHead className="text-black">COPY</TableHead>
+          <TableRow className='bg-slate-100'>
+            <TableHead className="text-black font-bold">TEMPLATE</TableHead>
+            <TableHead className="text-black font-bold ">AI RESP</TableHead>
+            <TableHead className="text-black font-bold">DATE</TableHead>
+            <TableHead className="text-black font-bold">WORDS</TableHead>
+            <TableHead className="text-black font-bold">COPY</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {historyData.map((record) => (
-            <TableRow  key={record.id}>
-              <TableCell className="font-medium ">{record.templateSlug}</TableCell>
-              <TableCell className='px-6 pb-5 text-sm text-gray-500 line-clamp-3 max-w-xs'>{record.aiResponse ?? 'No Response'}</TableCell>
-              <TableCell>{record.createdAt ? formatDate(record.createdAt) : 'No Date'}</TableCell>
-              <TableCell>{wordCount(record.aiResponse)} </TableCell>
-              <TableCell>
-                <button
-                  className="text-blue-600 hover:text-blue-900 p-2"
-                  onClick={() => navigator.clipboard.writeText(record.aiResponse ?? '')}
-                >
-                  Copy
-                </button>
-              </TableCell>
-            </TableRow>
-          ))}
+          {historyData.map((record) => {
+            const { icon, name } = getTemplateDetails(record.templateSlug);
+
+            return (
+              <TableRow key={record.id}>
+                <TableCell className="font-medium">
+                  <div className='flex items-center gap-2'>
+                    <Image src={icon} alt='icon' width={30} height={30} />
+                    <span>{name}</span>
+                  </div>
+                </TableCell>
+                <TableCell className='px-6 pb-5 text-sm   text-gray-600 line-clamp-3 max-w-xs'>
+                  {record.aiResponse ?? 'No Response'}
+                </TableCell>
+                <TableCell>
+                  {record.createdAt ? formatDate(record.createdAt) : 'No Date'}
+                </TableCell>
+                <TableCell>
+                  {wordCount(record.aiResponse)}
+                </TableCell>
+                <TableCell>
+                  <Button className='flex gap-2'
+                    onClick={() => navigator.clipboard.writeText(record.aiResponse ?? '')}>
+                    <Copy className='w-4 h-4' />Copy
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
