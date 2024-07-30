@@ -47,9 +47,7 @@ const UsageTrack = () => {
     result.forEach((element) => {
       if (element && element.aiResponse) {
         const count = wordCount(element.aiResponse);
-        console.log(
-          `Element ID: ${element.id}, AI Response Word Count: ${count}`
-        ); // Log each AI response word count
+       // Log each AI response word count
         total += count;
       }
     });
