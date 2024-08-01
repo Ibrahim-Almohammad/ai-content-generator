@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { Check, Loader2Icon } from "lucide-react";
@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 // import { UserSubscription } from "@/utils/schema";
 import { db } from "@/utils/db";
 import { useUser } from "@clerk/nextjs";
+import { UserSubscriptionContext } from "@/app/(context)/UserSubscriptionContext";
 
 // if (process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY === undefined) {
 //   throw new Error("process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY is not defined");
@@ -27,6 +28,8 @@ const  Billing = () => {
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const user=useUser();
+  const {UserSubscription,setUserSubscription} =useContext(UserSubscriptionContext);
+
   const router = useRouter();
 
 
@@ -103,9 +106,9 @@ const  Billing = () => {
           <p className="flex">
             <Check /> 1 Year Of History
           </p>
-          <Button className="mt-3" onClick={handleGetStartedClick}>
+          <Button className="mt-3 w-full " onClick={handleGetStartedClick}>
             {loading && <Loader2Icon className="animate-spin" />}
-            Get Started
+            {UserSubscription?'Active Plan':'Get Started'} 
           </Button>
         </div>
       </div>
