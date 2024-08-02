@@ -1,17 +1,18 @@
 'use client'
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import React, { useEffect, useState } from 'react'
-import Templates from '@/app/(data)/Templates'
-import { Button } from '@/components/ui/button'
-import { db } from '@/utils/db'
-import { AIOutput } from '@/utils/schema'
-import { currentUser } from '@clerk/nextjs/server'
-import { desc, eq } from 'drizzle-orm'
-import Image from 'next/image'
-import { TEMPLATE } from '../_components/TemplateListSection'
-import moment from 'moment'
-import { Copy } from 'lucide-react'
-import Link from 'next/link'
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import React, { useEffect, useState } from 'react';
+import Templates from '@/app/(data)/Templates';
+import { Button } from '@/components/ui/button';
+import { db } from '@/utils/db';
+import { AIOutput } from '@/utils/schema';
+import { desc, eq } from 'drizzle-orm';
+import Image from 'next/image';
+import { TEMPLATE } from '../_components/TemplateListSection';
+import moment from 'moment';
+import { Copy } from 'lucide-react';
+import Link from 'next/link';
+
+import { wordCount } from '@/utils/wordCount'; // Import the wordCount utility function
 
 export interface HISTORY {
   id: number,
@@ -21,10 +22,6 @@ export interface HISTORY {
   createdBy: string,
   createdAt: string | null;
 }
-
-export const wordCount = (text: string | null): number => {
-  return text ? text.trim().split(/\s+/).length : 0;
-};
 
 const History: React.FC = () => {
   const [historyData, setHistoryData] = useState<HISTORY[]>([]);
@@ -79,7 +76,7 @@ const History: React.FC = () => {
     <div className='bg-white border rounded-md m-4'>
       <h1 className='mt-3 text-3xl pl-2 font-bold'>History</h1>
       <p className='pl-2 pb-3'>Search your previously generated AI content</p>
-      <Table >
+      <Table>
         <TableHeader>
           <TableRow className='bg-slate-100'>
             <TableHead className="text-black font-bold">TEMPLATE</TableHead>
@@ -101,7 +98,7 @@ const History: React.FC = () => {
                     <span>{name}</span>
                   </div>
                 </TableCell>
-                <TableCell className='px-6 pb-5 text-sm   text-gray-600 line-clamp-3 max-w-xs'>
+                <TableCell className='px-6 pb-5 text-sm text-gray-600 line-clamp-3 max-w-xs'>
                   {record.aiResponse ?? 'No Response'}
                 </TableCell>
                 <TableCell>
