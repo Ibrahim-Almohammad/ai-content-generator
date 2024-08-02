@@ -11,37 +11,38 @@ import { UserSubscriptionContext } from "@/app/(context)/UserSubscriptionContext
 import { UpdateCreditUsageCredit } from "@/app/(context)/UpdateCreditUsageContext";
 import { wordCount } from '@/utils/wordCount'; // Import the wordCount utility function
 
+// export const wordCount = (text: string | null): number => {
+//   return text ? text.trim().split(/\s+/).length : 0;
+// };
+
 const UsageTrack = () => {
   const { user } = useUser();
-  const { totalUsage, setTotalUsage } = useContext(TotalUsageContext);
-  const { UserSubscription, setUserSubscription } = useContext(UserSubscriptionContext);
-  const [maxWords, setMaxWords] = useState(10000);
-  const { updateCreditUsage, setUpdateCreditUsage } = useContext(UpdateCreditUsageCredit);
-
+  const {totalUsage, setTotalUsage} =useContext(TotalUsageContext);
+  const {UserSubscription,setUserSubscription} =useContext(UserSubscriptionContext);
+  const [maxWords,setMaxWords]=useState(10000)
+  const {updateCreditUsage,setUpdateCreditUsage}=useContext(UpdateCreditUsageCredit)
   useEffect(() => {
-    if (user) {
-      GetData();
-      IsUserSubscribe();
-    }
+    user&&GetData();
+    user&&IsUserSubscribe();
+    // if (user) {
+    //   console.log("User updated:", user);
+    //   GetData();
+    // }
   }, [user]);
-
-  useEffect(() => {
-    if (updateCreditUsage && user) {
-      GetData();
-    }
-  }, [updateCreditUsage, user]);
+  useEffect(()=>{
+   user&&GetData();
+  },[updateCreditUsage&&user]);
 
   const GetData = async () => {
     try {
-      const email = user?.primaryEmailAddress?.emailAddress;
-      if (!email) {
+      if (!user?.primaryEmailAddress?.emailAddress) {
         console.error("User email address is undefined");
         return;
       }
       const result: HISTORY[] = await db
         .select()
         .from(AIOutput)
-        .where(eq(AIOutput.createdBy, email));
+        .where(eq(AIOutput.createdBy, user?.primaryEmailAddress?.emailAddress));
 
       console.log("Fetched data:", result); // Log the fetched data for debugging
       GetTotalUsage(result);
@@ -49,36 +50,25 @@ const UsageTrack = () => {
       console.error("Error fetching data:", error);
     }
   };
-
-  const IsUserSubscribe = async () => {
-    try {
-      const email = user?.primaryEmailAddress?.emailAddress;
-      if (!email) {
-        console.error("User email address is undefined");
-        return;
-      }
-      const result = await db
-        .select()
-        .from(StripeCustomer)
-        .where(eq(StripeCustomer.userId, email));
-      if (result.length > 0) {
-        setUserSubscription(true);
-        setMaxWords(100000);
-      }
-    } catch (error) {
-      console.error("Error checking subscription:", error);
-    }
-  };
-
+  const IsUserSubscribe=async()=>{
+     const result= await db.select().from(StripeCustomer)
+     .where(eq(StripeCustomer.userId,user?.primaryEmailAddress?.emailAddress));
+     if(result){
+      setUserSubscription(true);
+      setMaxWords(100000);
+     }
+  }
   const GetTotalUsage = (result: HISTORY[]) => {
     let total: number = 0;
     result.forEach((element) => {
       if (element && element.aiResponse) {
         const count = wordCount(element.aiResponse);
+       // Log each AI response word count
         total += count;
       }
     });
     setTotalUsage(total);
+    // console.log("Total usage updated:", total); // Log the total usage for debugging
   };
 
   return (
