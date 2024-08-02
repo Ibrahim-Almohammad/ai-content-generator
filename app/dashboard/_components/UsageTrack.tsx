@@ -9,10 +9,11 @@ import { HISTORY } from "../history/page";
 import { TotalUsageContext } from "@/app/(context)/TotalUsageContext";
 import { UserSubscriptionContext } from "@/app/(context)/UserSubscriptionContext";
 import { UpdateCreditUsageCredit } from "@/app/(context)/UpdateCreditUsageContext";
+import { wordCount } from '@/utils/wordCount'; // Import the wordCount utility function
 
-export const wordCount = (text: string | null): number => {
-  return text ? text.trim().split(/\s+/).length : 0;
-};
+// export const wordCount = (text: string | null): number => {
+//   return text ? text.trim().split(/\s+/).length : 0;
+// };
 
 const UsageTrack = () => {
   const { user } = useUser();
