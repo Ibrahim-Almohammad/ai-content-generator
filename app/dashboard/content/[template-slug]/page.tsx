@@ -32,17 +32,17 @@ function CreateNewContent(props: PROPS) {
   const { user } = useUser();
   const router = useRouter();
   const { totalUsage, setTotalUsage } = useContext(TotalUsageContext);
-  const {UserSubscription,setUserSubscription} =useContext(UserSubscriptionContext);
-  const {updateCreditUsage,setUpdateCreditUsage}=useContext(UpdateCreditUsageCredit)
-  /**
- * Used to generate content from AI
- * @param formData 
- * @returns 
- */
+  const { UserSubscription, setUserSubscription } = useContext(UserSubscriptionContext);
+  const { updateCreditUsage, setUpdateCreditUsage } = useContext(UpdateCreditUsageCredit);
 
+  /**
+   * Used to generate content from AI
+   * @param formData 
+   * @returns 
+   */
   const GenerateAIContent = async (formData: any) => {
-    if (totalUsage >= 10000&&!UserSubscription) {
-      console.log("please upgrade");
+    if (totalUsage >= 10000 && !UserSubscription) {
+      console.log("Please upgrade");
       router.push('/dashboard/billing');
       return;
     }
@@ -51,25 +51,36 @@ function CreateNewContent(props: PROPS) {
     const FinalAIPrompt = JSON.stringify(formData) + ", " + SelectedPrompt;
     const result = await chatSession.sendMessage(FinalAIPrompt);
 
-    setAiOutput(result?.response.text());
+    setAiOutput(await result?.response.text());
     await saveInDb(
       JSON.stringify(formData),
       selectedTemplate?.slug,
-      result?.response.text()
+      await result?.response.text()
     );
     setLoading(false);
-    setUpdateCreditUsage(Date.now())
+    setUpdateCreditUsage(Date.now());
   };
 
   const saveInDb = async (formData: any, slug: any, aiResp: string) => {
-    const result = await db.insert(AIOutput).values({
-      formData: formData,
-      templateSlug: slug,
-      aiResponse: aiResp,
-      createdBy: user?.primaryEmailAddress?.emailAddress,
-      createdAt: moment().format("DD/MM/yyyy"),
-    });
-    console.log(result);
+    // Ensure that formData, slug, and aiResp are defined
+    if (!formData || !slug || !aiResp || !user?.primaryEmailAddress?.emailAddress) {
+      console.error("Missing required fields for saving to the database");
+      return;
+    }
+
+    try {
+      const result = await db.insert(AIOutput).values({
+        formData: formData,
+        templateSlug: slug,
+        aiResponse: aiResp,
+        createdBy: user.primaryEmailAddress.emailAddress, // Ensure this is defined
+        createdAt: moment().format("DD/MM/yyyy"), // You may want to use a different date format if needed
+      });
+
+      console.log("Saved result to DB:", result);
+    } catch (error) {
+      console.error("Error saving to database:", error);
+    }
   };
 
   return (
